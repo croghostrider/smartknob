@@ -67,7 +67,10 @@ def plot_to_directory(pcb_file, output_directory, temp_dir, release_prefix):
         _, map_file = plotter.plot_drill()
         pdfs.append(map_file)
 
-        output_pdf_filename = os.path.join(output_directory, '%s-pcb-packet.pdf' % (board_name,))
+        output_pdf_filename = os.path.join(
+            output_directory, f'{board_name}-pcb-packet.pdf'
+        )
+
 
         command = ['pdfunite'] + pdfs + [output_pdf_filename]
         subprocess.check_call(command)

@@ -53,14 +53,10 @@ def xdotool(command):
     return subprocess.check_output(['xdotool'] + command)
 
 def wait_for_window(name, window_regex, additional_commands=None, timeout=10):
-    if additional_commands is not None:
-        commands = additional_commands
-    else:
-        commands = []
-
+    commands = additional_commands if additional_commands is not None else []
     DELAY = 0.5
     logger.info('Waiting for %s window...', name)
-    for i in range(int(timeout/DELAY)):
+    for _ in range(int(timeout/DELAY)):
         try:
             xdotool(['search', '--name', window_regex] + commands)
             logger.info('Found %s window', name)
@@ -68,7 +64,7 @@ def wait_for_window(name, window_regex, additional_commands=None, timeout=10):
         except subprocess.CalledProcessError:
             pass
         time.sleep(DELAY)
-    raise RuntimeError('Timed out waiting for %s window' % name)
+    raise RuntimeError(f'Timed out waiting for {name} window')
 
 @contextmanager
 def recorded_xvfb(video_filename, **xvfb_args):
@@ -89,19 +85,24 @@ def get_versioned_contents(filename, release_search_prefix):
         date = rev_info.git_date()
         date_long = rev_info.git_date(short=False)
         rev = rev_info.git_short_rev()
-        logger.info('Replacing placeholders with %s and %s' % (date, rev))
+        logger.info(f'Replacing placeholders with {date} and {rev}')
         release_version = 'v#.#'
         if release_search_prefix:
-            tag_version = rev_info.git_release_version(release_search_prefix)
-            if tag_version:
+            if tag_version := rev_info.git_release_version(
+                release_search_prefix
+            ):
                 release_version = tag_version
-        return original_contents, original_contents \
-            .replace('Date ""', 'Date "%s"' % date_long) \
-            .replace('DATE: YYYY-MM-DD TIME TZ', 'DATE: %s' % date_long) \
-            .replace('DATE: YYYY-MM-DD', 'DATE: %s' % date) \
-            .replace('Rev ""', 'Rev "%s"' % rev) \
-            .replace('COMMIT: deadbeef', 'COMMIT: %s' % rev) \
-            .replace('v#.#', release_version)
+        return original_contents, original_contents.replace(
+            'Date ""', 'Date "%s"' % date_long
+        ).replace('DATE: YYYY-MM-DD TIME TZ', f'DATE: {date_long}').replace(
+            'DATE: YYYY-MM-DD', f'DATE: {date}'
+        ).replace(
+            'Rev ""', 'Rev "%s"' % rev
+        ).replace(
+            'COMMIT: deadbeef', f'COMMIT: {rev}'
+        ).replace(
+            'v#.#', release_version
+        )
 
 
 @contextmanager
@@ -129,8 +130,11 @@ def patch_config(filename, replacements):
 
     new_contents = original_contents
     for (key, value) in replacements.items():
-        pattern = '^' + re.escape(key) + '=(.*)$'
-        new_contents = re.sub(pattern, key + '=' + value, new_contents, flags=re.MULTILINE)
+        pattern = f'^{re.escape(key)}=(.*)$'
+        new_contents = re.sub(
+            pattern, f'{key}={value}', new_contents, flags=re.MULTILINE
+        )
+
 
     with open(filename, 'w') as f:
         logger.debug('Writing to %s', filename)
