@@ -159,7 +159,7 @@ def export_3d(filename, suffix, width, height, transforms, raytrace, virtual, co
     def apply_color(name, values):
         components = ['Red', 'Green', 'Blue']
         for component, value in zip(components, values):
-            settings[name + '_' + component] = str(value)
+            settings[f'{name}_{component}'] = str(value)
 
     apply_color('SMaskColor', color_soldermask)
     apply_color('SilkColor', color_silk)

@@ -37,8 +37,7 @@ def versioned_board(filename, release_search_prefix):
         temp_pcb.flush()
 
         logger.debug('Load board')
-        board = pcbnew.LoadBoard(temp_pcb.name)
-        yield board
+        yield pcbnew.LoadBoard(temp_pcb.name)
 
 @contextmanager
 def get_plotter(pcb_filename, build_directory, release_prefix):
@@ -90,15 +89,9 @@ class Plotter(object):
         generate_map = True
         drill_writer.CreateDrillandMapFilesSet(self.build_directory, generate_drill, generate_map)
 
-        drill_file_name = os.path.join(
-            self.build_directory,
-            '%s.drl' % (board_name,)
-        )
+        drill_file_name = os.path.join(self.build_directory, f'{board_name}.drl')
 
-        map_file_name = os.path.join(
-            self.build_directory,
-            '%s-drl_map.pdf' % (board_name,)
-        )
+        map_file_name = os.path.join(self.build_directory, f'{board_name}-drl_map.pdf')
         return drill_file_name, map_file_name
 
 

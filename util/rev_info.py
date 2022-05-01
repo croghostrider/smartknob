@@ -24,10 +24,7 @@ def git_date(short=True):
             '--format=%ci',
             'HEAD',
         ]).decode('utf-8').strip()
-        if short:
-            return iso.split(' ')[0]
-        else:
-            return iso
+        return iso.split(' ')[0] if short else iso
     except Exception:
         raise RuntimeError("Could not read git commit date. Make sure you have git installed and you're working with a git clone of the repository.")
 
@@ -39,10 +36,15 @@ def git_release_version(search_prefix):
             '--points-at',
             'HEAD',
         ]).decode('utf-8').splitlines()
-        for tag in tags:
-            if tag.startswith(search_prefix):
-                return tag[len(search_prefix):]
-        return None
+        return next(
+            (
+                tag[len(search_prefix) :]
+                for tag in tags
+                if tag.startswith(search_prefix)
+            ),
+            None,
+        )
+
     except Exception:
         raise RuntimeError("Could not read git release tags. Make sure you have git installed and you're working with a git clone of the repository.")
 
